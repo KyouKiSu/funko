@@ -3,14 +3,17 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import buildLogger from "./logger.js";
-const DIR_PATH = dirname(fileURLToPath(import.meta.url));
-puppeteer.use(StealthPlugin());
+import { default as ImapClient } from 'emailjs-imap-client'
 import my_utils from "./utils/file_parse.js";
+
+const DELAY=10000;
+
+const DIR_PATH = dirname(fileURLToPath(import.meta.url));
 let emails = my_utils.get_array_from_file(`${DIR_PATH}\\email.txt`).map(my_utils.format_email)
 let proxies = my_utils.get_array_from_file(`${DIR_PATH}\\proxy.txt`).map(my_utils.format_proxy)
+puppeteer.use(StealthPlugin());
 process.setMaxListeners(0);
 
-import { default as ImapClient } from 'emailjs-imap-client'
 async function get_codes_droppp(user, pass, imap, port) {
     let codes = [];
     var client = new ImapClient.default(imap, port, {
@@ -168,5 +171,5 @@ for (let i = O; i < N; i++) {
     catch(e){
         console.log("unexpected error",e)
     }
-    await new Promise(resolve => setTimeout(resolve, 10000))
+    await new Promise(resolve => setTimeout(resolve, DELAY))
 }
