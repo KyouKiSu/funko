@@ -7,6 +7,7 @@ import { default as ImapClient } from 'emailjs-imap-client'
 import my_utils from "./utils/file_parse.js";
 
 const DELAY=10000;
+const PASSWORD_EXTRA = "39tt!"
 
 const DIR_PATH = dirname(fileURLToPath(import.meta.url));
 let emails = my_utils.get_array_from_file(`${DIR_PATH}\\email.txt`).map(my_utils.format_email)
@@ -80,7 +81,7 @@ async function create_funko_account(email_obj, proxy_obj,i) {
             await page.focus('#__next > div.styles_container__20C00 > div > div.styles_container__2vQ2_ > form > input:nth-child(1)')
             await page.keyboard.type(email_obj[0])
             await page.focus('#__next > div.styles_container__20C00 > div > div.styles_container__2vQ2_ > form > input:nth-child(2)')
-            await page.keyboard.type((email_obj[1] + '39tt!'))
+            await page.keyboard.type((email_obj[1] + PASSWORD_EXTRA))
             await Promise.all([
                 await page.click("#__next > div.styles_container__20C00 > div > div.styles_container__2vQ2_ > form > button")
             ]);
