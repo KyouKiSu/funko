@@ -6,7 +6,7 @@ import buildLogger from "./logger.js";
 import { default as ImapClient } from 'emailjs-imap-client'
 import my_utils from "./utils/file_parse.js";
 
-const DELAY=10000;
+const DELAY = 10000;
 const PASSWORD_EXTRA = "39tt!"
 
 const DIR_PATH = dirname(fileURLToPath(import.meta.url));
@@ -46,14 +46,16 @@ async function get_codes_droppp(user, pass, imap, port) {
     await client.close()
     return codes;
 }
-async function create_funko_account(email_obj, proxy_obj,i) {
-    const loggers = buildLogger(DIR_PATH+"\\logs\\",email_obj[0]);
-    let { logScreen} = loggers;
+async function create_funko_account(email_obj, proxy_obj, i) {
+    const loggers = buildLogger(DIR_PATH + "\\logs\\", email_obj[0]);
+    let { logScreen } = loggers;
     let browser;
-    let args = ['--disable-extensions-http-throttling', '--auto-open-devtools-for-tabs', `--proxy-server=${proxy_obj[2]}`]
+    let args = ['--disable-extensions-http-throttling', '--auto-open-devtools-for-tabs', `--proxy-server=${proxy_obj[2]}`,
+        `--disable-extensions-except=${DIR_PATH}\\anticaptcha`,
+        `--load-extension=${DIR_PATH}\\anticaptcha`,]
 
     let page = '';
-    try{
+    try {
         browser = await puppeteer.launch({
             userDataDir: `${DIR_PATH}\\profiles\\${i}\\`,
             headless: false,
@@ -66,11 +68,11 @@ async function create_funko_account(email_obj, proxy_obj,i) {
         await page.setDefaultTimeout(500000);
         await new Promise(r => setTimeout(r, 5000));
     }
-    catch(e){
-        logScreen.error("connection error, check proxy")
+    catch (e) {
+        logScreen.error("connection error, check proxy" + e)
         return;
     }
-    
+
     try {
         logScreen.info("started creation")
         try {
@@ -95,34 +97,54 @@ async function create_funko_account(email_obj, proxy_obj,i) {
 
         }
 
-        try{
+        console.log('hi')
+        try {
+            //await page.waitForNavigation({ waitUntil: 'networkidle2' });
+            console.log('hi')
+            await new Promise(r => setTimeout(r, 1500));
+            if ((await page.content()).match('An account is already associated with this email.')) {
+                throw 'rip'
+            }
+            console.log('hi')
+
             await page.waitForSelector("#__next > div.styles_container__20C00 > div > div.styles_container__1DJtJ > form > div.styles_container__3tX-w > div > input[type=tel]:nth-child(1)")
+            console.log('hi')
         }
-        catch(e){
+        catch (e) {
             logScreen.info("already registered")
+            await page.goto('https://droppp.io/login/', { waitUntil: 'load' })
+            await page.focus('#__next > div.styles_container__20C00 > div > div.styles_container__37UFk > form > input:nth-child(1)')
+            await page.keyboard.type(email_obj[0])
+            await page.focus('#__next > div.styles_container__20C00 > div > div.styles_container__37UFk > form > input:nth-child(2)')
+            await page.keyboard.type((email_obj[1] + PASSWORD_EXTRA))
+            await Promise.all([
+                await page.click("#__next > div.styles_container__20C00 > div > div.styles_container__37UFk > form > button")
+            ]);
+            await new Promise(r => setTimeout(r, 1500));
             return;
         }
-        let passed=false;
-        for(let retry = 0;retry<5 && !passed;retry++){
-            let resend_exists=false;
+        console.log('hi')
+        let passed = false;
+        for (let retry = 0; retry < 5 && !passed; retry++) {
+            let resend_exists = false;
             try {
-                await page.waitForSelector("#__next > div.styles_container__20C00 > div > div.styles_container__1DJtJ > form > div.styles_links__31NJI > div", {timeout: 1000});
-                if(retry>0){
+                await page.waitForSelector("#__next > div.styles_container__20C00 > div > div.styles_container__1DJtJ > form > div.styles_links__31NJI > div", { timeout: 1000 });
+                if (retry > 0) {
                     await Promise.all([
                         await page.click("#__next > div.styles_container__20C00 > div > div.styles_container__1DJtJ > form > div.styles_links__31NJI > div")
                     ]);
                 }
-                resend_exists=true;
+                resend_exists = true;
             } catch (error) {
-                passed=true;
+                passed = true;
             }
-            if(resend_exists){
+            if (resend_exists) {
                 await page.focus('#__next > div.styles_container__20C00 > div > div.styles_container__1DJtJ > form > div.styles_container__3tX-w > div > input[type=tel]:nth-child(1)')
                 logScreen.info("waiting for code")
                 await new Promise(r => setTimeout(r, 5000));
                 let code = await get_codes_droppp(email_obj[0], email_obj[1], email_obj[2], email_obj[3])
                 code = code[0]
-                logScreen.info("received "+code)
+                logScreen.info("received " + code)
                 await page.keyboard.type(code)
                 await new Promise(r => setTimeout(r, 500));
                 await page.waitForSelector("#__next > div.styles_container__20C00 > div > div.styles_container__1DJtJ > form > button")
@@ -132,7 +154,7 @@ async function create_funko_account(email_obj, proxy_obj,i) {
                 await new Promise(r => setTimeout(r, 500));
             }
         }
-        
+
         //mailing list
         await new Promise(r => setTimeout(r, 500));
         await page.waitForSelector("#__next > div.styles_container__20C00 > div > form > div > a")
@@ -161,16 +183,16 @@ async function create_funko_account(email_obj, proxy_obj,i) {
     catch (e) {
         logScreen.error(e)
     }
-    browser.close()
+    //browser.close()
 }
 const O = 0
 const N = emails.length;
 for (let i = O; i < N; i++) {
-    try{
-        create_funko_account(emails[i],proxies[i%proxies.length],i)
+    try {
+        create_funko_account(emails[i], proxies[i % proxies.length], i)
     }
-    catch(e){
-        console.log("unexpected error",e)
+    catch (e) {
+        console.log("unexpected error", e)
     }
     await new Promise(resolve => setTimeout(resolve, DELAY))
 }
