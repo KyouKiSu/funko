@@ -1,5 +1,9 @@
 # Installation:
 
+Install node-js, if required: https://nodejs.org/en/
+
+Then do:
+
 ```bash
 cd ./funko
 npm install
@@ -17,6 +21,14 @@ Proxy format: ```login:password@ip:port```
 
 
 # Launch autoreg:
+
+If you don't want tabs to close after registration is completed (to open up accounts to stay in queue), then in file ```./src/index.js``` change ```true``` to ```false``` in line:
+
+```js
+const EXIT_AFTER_FINISHED = true;
+```
+
+To run:
 
 ```bash
 node ./src/index.js

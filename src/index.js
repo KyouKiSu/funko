@@ -7,7 +7,8 @@ import { default as ImapClient } from 'emailjs-imap-client'
 import my_utils from "./utils/file_parse.js";
 
 const DELAY = 10000;
-const PASSWORD_EXTRA = "39tt!"
+const PASSWORD_EXTRA = "39tt!";
+const EXIT_AFTER_FINISHED = true;
 
 const DIR_PATH = dirname(fileURLToPath(import.meta.url));
 let emails = my_utils.get_array_from_file(`${DIR_PATH}\\email.txt`).map(my_utils.format_email)
@@ -97,18 +98,15 @@ async function create_funko_account(email_obj, proxy_obj, i) {
 
         }
 
-        console.log('hi')
         try {
             //await page.waitForNavigation({ waitUntil: 'networkidle2' });
-            console.log('hi')
             await new Promise(r => setTimeout(r, 1500));
             if ((await page.content()).match('An account is already associated with this email.')) {
                 throw 'rip'
             }
-            console.log('hi')
+
 
             await page.waitForSelector("#__next > div.styles_container__20C00 > div > div.styles_container__1DJtJ > form > div.styles_container__3tX-w > div > input[type=tel]:nth-child(1)")
-            console.log('hi')
         }
         catch (e) {
             logScreen.info("already registered")
@@ -121,9 +119,10 @@ async function create_funko_account(email_obj, proxy_obj, i) {
                 await page.click("#__next > div.styles_container__20C00 > div > div.styles_container__37UFk > form > button")
             ]);
             await new Promise(r => setTimeout(r, 1500));
-            return;
+            if (EXIT_AFTER_FINISHED) {
+                browser.close()
+            }
         }
-        console.log('hi')
         let passed = false;
         for (let retry = 0; retry < 5 && !passed; retry++) {
             let resend_exists = false;
@@ -183,7 +182,9 @@ async function create_funko_account(email_obj, proxy_obj, i) {
     catch (e) {
         logScreen.error(e)
     }
-    //browser.close()
+    if (EXIT_AFTER_FINISHED) {
+        browser.close()
+    }
 }
 const O = 0
 const N = emails.length;
