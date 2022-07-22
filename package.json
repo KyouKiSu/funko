@@ -10,10 +10,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "emailjs-imap-client": "^3.1.0",
-    "node-imap": "^0.9.6",
+    "imap-simple": "^5.1.0",
     "puppeteer-extra": "^3.2.3",
     "puppeteer-extra-plugin-stealth": "^2.9.0",
+    "underscore": "^1.13.4",
     "winston": "^3.7.2"
   }
 }
