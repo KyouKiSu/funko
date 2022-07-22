@@ -25,7 +25,7 @@ Proxy format: ```login:password@ip:port```
 If you don't want tabs to close after registration is completed (to open up accounts to stay in queue), then in file ```./src/index.js``` change ```true``` to ```false``` in line:
 
 ```js
-const EXIT_AFTER_FINISHED = true;
+const KEEP_OPEN = true;
 ```
 
 To run:
